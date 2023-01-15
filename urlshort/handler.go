@@ -1,6 +1,7 @@
 package urlshort
 
 import (
+	"fmt"
 	"net/http"
 )
 
@@ -10,9 +11,24 @@ import (
 // that each key in the map points to, in string format).
 // If the path is not provided in the map, then the fallback
 // http.Handler will be called instead.
+
+// https://medium.com/geekculture/demystifying-http-handlers-in-golang-a363e4222756
+// Read the above - it really helps in understanding the handler function
+// There are three ways to serve a webpage using http.Handler:
+// - Using the Handler naiively
+// - Handlefunc: Allows you to pass a function
+// - HandlerFunc: mixes and matches supporting to pass in a function and being able to add it to the handler
 func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.HandlerFunc {
-	//	TODO: Implement this...
-	return nil
+
+	servePathToUrls := func(w http.ResponseWriter, r *http.Request) {
+		//https://stackoverflow.com/questions/13533681/when-do-gos-pointers-dereference-themselves
+		toRedirectUrl := pathsToUrls[r.URL.Path]
+
+		fmt.Printf("After modification: %+v", r.URL.Path)
+		fmt.Printf("Path Redirected: %+v", toRedirectUrl)
+		http.Redirect(w, r, toRedirectUrl, http.StatusFound)
+	}
+	return http.HandlerFunc(servePathToUrls)
 }
 
 // YAMLHandler will parse the provided YAML and then return
@@ -31,7 +47,7 @@ func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.Handl
 //
 // See MapHandler to create a similar http.HandlerFunc via
 // a mapping of paths to urls.
-func YAMLHandler(yml []byte, fallback http.Handler) (http.HandlerFunc, error) {
-	// TODO: Implement this...
-	return nil, nil
-}
+// func YAMLHandler(yml []byte, fallback http.Handler) (http.HandlerFunc, error) {
+// 	// TODO: Implement this...
+// 	return nil, nil
+// }
